@@ -1,1 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 GERADOR DE ACESSO ASM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            min-height: 100vh; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            overflow: hidden; 
+        }
+        .header { 
+            background: #264653; 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .content { padding: 40px; }
+        .form-group { margin-bottom: 25px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            color: #264653; 
+            font-size: 16px; 
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 10px; 
+            font-size: 16px; 
+        }
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #2a9d8f; 
+        }
+        .btn { 
+            width: 100%; 
+            padding: 20px; 
+            background: #2a9d8f; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            margin-bottom: 10px;
+        }
+        .btn:hover { background: #21867a; }
+        .btn-secondary {
+            background: #264653;
+        }
+        .result { 
+            display: none; 
+            margin-top: 30px; 
+            padding: 30px; 
+            background: #f8f9fa; 
+            border-radius: 15px; 
+            border-left: 5px solid #2a9d8f; 
+        }
+        .result.show { display: block; animation: slideIn 0.5s ease; }
+        @keyframes slideIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .credentials { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            border: 2px solid #e0e0e0; 
+        }
+        .cred-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 0; 
+            border-bottom: 1px solid #eee; 
+        }
+        .cred-value { 
+            color: #2a9d8f; 
+            font-weight: bold; 
+            font-family: monospace; 
+            font-size: 16px; 
+        }
+        .code-box {
+            background: #1a1a2e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 20px 0;
+            position: relative;
+        }
+        .code-box button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #2a9d8f;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .instructions { 
+            background: #fff3cd; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            border-left: 4px solid #ffc107; 
+        }
+        .instructions ol { margin-left: 20px; line-height: 2; }
+        .footer { 
+            text-align: center; 
+            padding: 20px; 
+            background: #f8f9fa; 
+            color: #666; 
+            font-size: 14px; 
+        }
+        .users-list {
+            margin-top: 20px;
+        }
+        .user-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #2a9d8f;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-item button {
+            background: #e76f51;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 GERADOR DE ACESSO ASM</h1>
+            <p>Crie usuários para o sistema centralizado</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-group">
+                <label>👤 Nome do Profissional</label>
+                <input type="text" id="profName" placeholder="Ex: Dra. Maria Silva">
+            </div>
+            
+            <div class="form-group">
+                <label>🔑 Usuário (Login)</label>
+                <input type="text" id="profUser" placeholder="Ex: maria2024">
+            </div>
+            
+            <div class="form-group">
+                <label>🔒 Senha</label>
+                <input type="text" id="profPass" placeholder="Ex: Maria@2024">
+            </div>
+            
+            <button class="btn" onclick="generateUser()">➕ CRIAR NOVO USUÁRIO</button>
+            
+            <div class="users-list" id="usersList"></div>
+            
+            <div id="resultArea" class="result">
+                <h2 style="color: #264653; margin-bottom: 20px;">✅ Usuário Criado!</h2>
+                
+                <div class="credentials">
+                    <h3>📋 Credenciais para enviar ao profissional:</h3>
+                    <div class="cred-item"><span>Link de acesso:</span><span class="cred-value">https://seuusuario.github.io/asm-sistema</span></div>
+                    <div class="cred-item"><span>Usuário:</span><span class="cred-value" id="resUser"></span></div>
+                    <div class="cred-item"><span>Senha:</span><span class="cred-value" id="resPass"></span></div>
+                </div>
+                
+                <div class="instructions">
+                    <h4>📤 Próximos passos:</h4>
+                    <ol>
+                        <li>Copie o código de ativação abaixo</li>
+                        <li>Abra o arquivo SISTEMA_ASM.html</li>
+                        <li>Cole o código na seção "USUÁRIOS CADASTRADOS"</li>
+                        <li>Suba o arquivo atualizado no GitHub</li>
+                        <li>Envie o link + login + senha para o profissional</li>
+                    </ol>
+                </div>
+                
+                <h3 style="margin-top: 20px; color: #264653;">📋 Código de Ativação:</h3>
+                <div class="code-box">
+                    <button onclick="copyCode()">Copiar</button>
+                    <pre id="activationCode"></pre>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="generateSystemFile()" style="margin-top: 20px;">
+                📥 GERAR ARQUIVO SISTEMA_ASM.HTML
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p><strong>ASM Gestão Clínica</strong> - Sistema Exclusivo por Dra. Andresa Augusto</p>
+        </div>
+    </div>
+
+    <script>
+        // Lista de usuários criados (apenas nesta sessão)
+        let createdUsers = [];
+        
+        function generateUser() {
+            const name = document.getElementById('profName').value.trim();
+            const user = document.getElementById('profUser').value.trim().toLowerCase();
+            const pass = document.getElementById('profPass').value.trim();
+            
+            if (!name || !user || !pass) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+            
+            if (pass.length < 6) {
+                alert('A senha deve ter no mínimo 6 caracteres!');
+                return;
+            }
+            
+            // Verifica se usuário já existe
+            if (createdUsers.find(u => u.user === user)) {
+                alert('Este usuário já foi criado!');
+                return;
+            }
+            
+            // Cria objeto do usuário
+            const userObj = {
+                name: name,
+                user: user,
+                pass: pass,
+                created: new Date().toLocaleDateString()
+            };
+            
+            createdUsers.push(userObj);
+            
+            // Gera código de ativação
+            const code = `        '${user}': {
+            name: '${name}',
+            pass: '${pass}',
+            data: {}
+        }`;
+            
+            // Mostra resultado
+            document.getElementById('resUser').textContent = user;
+            document.getElementById('resPass').textContent = pass;
+            document.getElementById('activationCode').textContent = code + ',';
+            document.getElementById('resultArea').classList.add('show');
+            
+            // Atualiza lista
+            renderUsersList();
+            
+            // Limpa campos
+            document.getElementById('profName').value = '';
+            document.getElementById('profUser').value = '';
+            document.getElementById('profPass').value = '';
+        }
+        
+        function renderUsersList() {
+            const list = document.getElementById('usersList');
+            if (createdUsers.length === 0) {
+                list.innerHTML = '';
+                return;
+            }
+            
+            let html = '<h3 style="margin-bottom: 15px; color: #264653;">Usuários criados nesta sessão:</h3>';
+            createdUsers.forEach((u, index) => {
+                html += `
+                    <div class="user-item">
+                        <div>
+                            <strong>${u.name}</strong><br>
+                            <small>Login: ${u.user} | Criado em: ${u.created}</small>
+                        </div>
+                        <button onclick="removeUser(${index})">Remover</button>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+        
+        function removeUser(index) {
+            createdUsers.splice(index, 1);
+            renderUsersList();
+        }
+        
+        function copyCode() {
+            const code = document.getElementById('activationCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Código copiado! Cole no arquivo SISTEMA_ASM.html');
+            });
+        }
+        
+        function generateSystemFile() {
+            if (createdUsers.length === 0) {
+                alert('Crie pelo menos um usuário primeiro!');
+                return;
+            }
+            
+            // Gera código de todos os usuários
+            let usersCode = '';
+            createdUsers.forEach(u => {
+                usersCode += `    '${u.user}': { name: '${u.name}', pass: '${u.pass}', data: {p:[],a:[],e:[],ex:[],cfg:{n:'${u.name}',cr:'',cl:'ASM Fisioterapia'}} },\n`;
+            });
+            
+            // Gera o arquivo completo do sistema
+            const systemCode = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASM Gestão Clínica</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f0f2f5}
+.login-container{display:flex;justify-content:center;align-items:center;min-height:100vh;background:linear-gradient(135deg,#264653 0%,#2a9d8f 100%)}
+.login-box{background:white;padding:40px;border-radius:15px;box-shadow:0 10px 40px rgba(0,0,0,0.2);width:90%;max-width:400px;text-align:center}
+.login-box h1{color:#264653;margin-bottom:10px;font-size:24px}
+.login-box h2{color:#666;font-size:16px;margin-bottom:30px;font-weight:normal}
+.login-box input{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;margin-bottom:15px}
+.login-box input:focus{outline:none;border-color:#2a9d8f}
+.login-btn{width:100%;padding:14px;background:#2a9d8f;color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer}
+.login-error{color:#e76f51;margin-top:10px;display:none}
+.header{background:#264653;color:white;padding:15px;text-align:center}
+.header h1{font-size:20px}
+.user-bar{background:#1a3a47;color:white;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.user-bar button{background:rgba(255,255,255,0.2);border:none;color:white;padding:5px 15px;border-radius:5px;cursor:pointer}
+.nav{display:flex;justify-content:center;gap:5px;padding:10px;background:#2a9d8f;flex-wrap:wrap}
+.nav button{padding:8px 15px;border:none;background:rgba(255,255,255,0.2);color:white;border-radius:5px;cursor:pointer;font-size:12px}
+.nav button.active{background:white;color:#264653}
+.container{max-width:1200px;margin:20px auto;padding:0 20px}
+.section{display:none;background:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+.section.active{display:block}
+.btn{padding:8px 15px;border:none;border-radius:5px;cursor:pointer;font-size:14px;margin:5px}
+.btn-primary{background:#2a9d8f;color:white}
+.btn-success{background:#52b788;color:white}
+.btn-danger{background:#e76f51;color:white}
+.btn-whatsapp{background:#25d366;color:white}
+.form-group{margin-bottom:15px}
+.form-group label{display:block;margin-bottom:5px;font-weight:bold;color:#333;font-size:14px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px;margin-top:20px}
+.card{background:white;padding:15px;border-radius:8px;border:2px solid #e2e8f0;cursor:pointer;transition:all 0.3s}
+.card:hover{border-color:#2a9d8f;transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:20px}
+.calendar-header{text-align:center;font-weight:bold;padding:8px;background:#264653;color:white;font-size:12px}
+.calendar-day{background:#f8f9fa;min-height:80px;padding:8px;border-radius:5px;cursor:pointer;font-size:12px}
+.calendar-day:hover{background:#e9ecef}
+.appointment{background:#2a9d8f;color:white;padding:3px;margin:2px 0;border-radius:3px;font-size:11px;display:flex;justify-content:space-between}
+.appointment.cancelled{background:#adb5bd;text-decoration:line-through;opacity:0.7}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:1000}
+.modal.active{display:flex}
+.modal-content{background:white;padding:20px;border-radius:10px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.close-btn{font-size:24px;cursor:pointer;background:none;border:none}
+table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}
+th,td{padding:10px;text-align:left;border-bottom:1px solid #ddd}
+th{background:#f8f9fa;font-weight:bold}
+.summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-bottom:20px}
+.summary-card{padding:15px;border-radius:10px;text-align:center;color:white}
+.summary-card.green{background:#52b788}
+.summary-card.red{background:#e76f51}
+.summary-card.blue{background:#264653}
+.summary-card h3{font-size:24px;margin-bottom:5px}
+.tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #ddd}
+.tab{padding:10px 20px;background:none;border:none;cursor:pointer;font-size:14px}
+.tab.active{color:#2a9d8f;border-bottom:2px solid #2a9d8f}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.footer{text-align:center;padding:20px;background:#264653;color:white;margin-top:40px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-container">
+<div class="login-box">
+<h1>🏥 ASM Gestão Clínica</h1>
+<h2>Login do Profissional</h2>
+<input type="text" id="loginUser" placeholder="Usuário">
+<input type="password" id="loginPass" placeholder="Senha">
+<button class="login-btn" onclick="doLogin()">Entrar</button>
+<div id="loginError" class="login-error">Usuário ou senha incorretos!</div>
+</div>
+</div>
+
+<div id="mainSystem" style="display:none">
+<div class="header"><h1>🏥 ASM Gestão Clínica</h1></div>
+<div class="user-bar">
+<div>👤 <span id="currentUserName"></span></div>
+<button onclick="logout()">🚪 Sair</button>
+</div>
+<div class="nav">
+<button class="active" onclick="showSection('agenda')">📅 Agenda</button>
+<button onclick="showSection('pacientes')">👥 Pacientes</button>
+<button onclick="showSection('financeiro')">💰 Financeiro</button>
+<button onclick="showSection('fluxo')">📊 Fluxo</button>
+<button onclick="showSection('config')">⚙️ Config</button>
+</div>
+
+<div class="container">
+<div id="agenda" class="section active">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+<h2>Agenda</h2>
+<button class="btn btn-primary" onclick="openApptModal()">+ Novo</button>
+</div>
+<div style="display:flex;justify-content:center;gap:20px;margin-bottom:20px">
+<button class="btn btn-primary" onclick="changeMonth(-1)">←</button>
+<h3 id="currentMonth"></h3>
+<button class="btn btn-primary" onclick="changeMonth(1)">→</button>
+</div>
+<div class="calendar" id="calendar"></div>
+</div>
+
+<div id="pacientes" class="section">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+<h2>Pacientes</h2>
+<button class="btn btn-primary" onclick="openPatientModal()">+ Novo</button>
+</div>
+<input type="text" style="width:100%;padding:10px;margin-bottom:20px" placeholder="Buscar..." oninput="searchPatients(this.value)">
+<div class="grid" id="patientsList"></div>
+</div>
+
+<div id="financeiro" class="section">
+<h2>Financeiro</h2>
+<div class="summary-cards">
+<div class="summary-card green"><h3 id="totalRec">R$ 0,00</h3><p>Recebido</p></div>
+<div class="summary-card red"><h3 id="totalPen">R$ 0,00</h3><p>Pendente</p></div>
+<div class="summary-card blue"><h3 id="totalSess">0</h3><p>Sessões</p></div>
+</div>
+<table>
+<thead><tr><th>Paciente</th><th>Data</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+<tbody id="finTable"></tbody>
+</table>
+</div>
+
+<div id="fluxo" class="section">
+<h2>Fluxo de Caixa</h2>
+<div class="form-group">
+<label>Mês/Ano</label>
+<input type="month" id="cfMonth" onchange="renderCF()">
+</div>
+<div class="summary-cards">
+<div class="summary-card green"><h3 id="cfEnt">R$ 0,00</h3><p>Entradas</p></div>
+<div class="summary-card red"><h3 id="cfSai">R$ 0,00</h3><p>Saídas</p></div>
+<div class="summary-card blue"><h3 id="cfBal">R$ 0,00</h3><p>Saldo</p></div>
+</div>
+<button class="btn btn-primary" onclick="openExpenseModal()">+ Despesa</button>
+<table id="cfTable"></table>
+</div>
+
+<div id="config" class="section">
+<h2>Configurações</h2>
+<div class="form-group">
+<label>Nome</label>
+<input type="text" id="cfgName">
+</div>
+<div class="form-group">
+<label>CREFITO</label>
+<input type="text" id="cfgCref">
+</div>
+<div class="form-group">
+<label>Clínica</label>
+<input type="text" id="cfgClinic" value="ASM Fisioterapia">
+</div>
+<button class="btn btn-primary" onclick="saveConfig()">Salvar</button>
+</div>
+</div>
+
+<div class="modal" id="apptModal">
+<div class="modal-content">
+<div class="modal-header"><h3>Agendamento</h3><button class="close-btn" onclick="closeModal('apptModal')">&times;</button></div>
+<div class="form-group"><label>Paciente</label><select id="apptPat"></select></div>
+<div class="form-group"><label>Data</label><input type="date" id="apptDate"></div>
+<div class="form-group"><label>Hora</label><input type="time" id="apptTime"></div>
+<div class="form-group"><label>Valor</label><input type="number" id="apptVal" step="0.01"></div>
+<button class="btn btn-primary" onclick="saveAppt()">Salvar</button>
+</div>
+</div>
+
+<div class="modal" id="patientModal">
+<div class="modal-content">
+<div class="modal-header"><h3 id="patTitle">Novo Paciente</h3><button class="close-btn" onclick="closeModal('patientModal')">&times;</button></div>
+<input type="hidden" id="patId">
+<div class="form-group"><label>Nome</label><input type="text" id="patName"></div>
+<div class="form-group"><label>Telefone</label><input type="tel" id="patPhone"></div>
+<div class="form-group"><label>Valor Padrão</label><input type="number" id="patVal" step="0.01"></div>
+<div style="display:flex;justify-content:space-between">
+<button class="btn btn-danger" onclick="delPatient()">Excluir</button>
+<button class="btn btn-primary" onclick="savePatient()">Salvar</button>
+</div>
+</div>
+</div>
+
+<div class="modal" id="expenseModal">
+<div class="modal-content">
+<div class="modal-header"><h3>Despesa</h3><button class="close-btn" onclick="closeModal('expenseModal')">&times;</button></div>
+<div class="form-group"><label>Data</label><input type="date" id="expDate"></div>
+<div class="form-group"><label>Descrição</label><input type="text" id="expDesc"></div>
+<div class="form-group"><label>Valor</label><input type="number" id="expVal" step="0.01"></div>
+<button class="btn btn-primary" onclick="saveExpense()">Salvar</button>
+</div>
+</div>
+
+<div class="footer">
+<p><strong>ASM Gestão Clínica por Dra. Andresa Augusto</strong></p>
+<p>© 2024 - Todos os direitos reservados</p>
+<p>Proibida reprodução sem autorização</p>
+</div>
+</div>
+
+<script>
+// ========== USUÁRIOS CADASTRADOS (ADICIONE AQUI) ==========
+const USERS = {
+${usersCode}};
+
+// ========== SISTEMA ==========
+let CU = null;
+let CD = null;
+let curD = new Date();
+let curP = null;
+
+function doLogin() {
+    const u = document.getElementById('loginUser').value.trim().toLowerCase();
+    const p = document.getElementById('loginPass').value;
+    
+    if (USERS[u] && USERS[u].pass === p) {
+        CU = u;
+        CD = USERS[u].data;
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('mainSystem').style.display = 'block';
+        document.getElementById('currentUserName').textContent = USERS[u].name;
+        init();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+        setTimeout(() => document.getElementById('loginError').style.display = 'none', 3000);
+    }
+}
+
+function logout() {
+    // Salva dados antes de sair
+    if (CU) {
+        USERS[CU].data = CD;
+    }
+    location.reload();
+}
+
+function init() {
+    document.getElementById('cfgName').value = CD.cfg.n;
+    document.getElementById('cfgCref').value = CD.cfg.cr;
+    document.getElementById('cfgClinic').value = CD.cfg.cl;
+    renderCal();
+    renderPts();
+    updFin();
+    loadPatSel();
+    document.getElementById('cfMonth').value = new Date().toISOString().slice(0, 7);
+}
+
+function saveConfig() {
+    CD.cfg.n = document.getElementById('cfgName').value;
+    CD.cfg.cr = document.getElementById('cfgCref').value;
+    CD.cfg.cl = document.getElementById('cfgClinic').value;
+    alert('Salvo!');
+}
+
+function showSection(s) {
+    document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.nav button').forEach(x => x.classList.remove('active'));
+    document.getElementById(s).classList.add('active');
+    event.target.classList.add('active');
+    if (s === 'financeiro') renderFin();
+    if (s === 'fluxo') renderCF();
+}
+
+function renderCal() {
+    const y = curD.getFullYear(), m = curD.getMonth();
+    document.getElementById('currentMonth').textContent = new Date(y, m).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
+    const fd = new Date(y, m, 1).getDay(), dim = new Date(y, m + 1, 0).getDate();
+    const cal = document.getElementById('calendar');
+    cal.innerHTML = '';
+    const ds = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+    ds.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'calendar-header';
+        div.textContent = d;
+        cal.appendChild(div);
+    });
+    for (let i = 0; i < fd; i++) cal.appendChild(document.createElement('div'));
+    const td = new Date();
+    for (let d = 1; d <= dim; d++) {
+        const div = document.createElement('div');
+        div.className = 'calendar-day';
+        div.innerHTML = '<strong>' + d + '</strong>';
+        if (y === td.getFullYear() && m === td.getMonth() && d === td.getDate()) {
+            div.style.background = '#2a9d8f';
+            div.style.color = 'white';
+        }
+        const da = CD.a.filter(a => {
+            const p = a.d.split('-');
+            return parseInt(p[0]) === y && parseInt(p[1]) === m + 1 && parseInt(p[2]) === d;
+        });
+        da.forEach(ap => {
+            const pt = CD.p.find(p => p.i === ap.p);
+            const ad = document.createElement('div');
+            ad.className = 'appointment' + (ap.c ? ' cancelled' : '');
+            ad.innerHTML = '<span>' + ap.t + ' ' + (pt ? pt.n.split(' ')[0] : '') + '</span>';
+            div.appendChild(ad);
+        });
+        div.onclick = () => openApptModal(y, m, d);
+        cal.appendChild(div);
+    }
+}
+
+function changeMonth(d) {
+    curD.setMonth(curD.getMonth() + d);
+    renderCal();
+}
+
+function renderPts() {
+    const pl = document.getElementById('patientsList');
+    pl.innerHTML = '';
+    CD.p.forEach(p => {
+        const pa = CD.a.filter(a => a.p === p.i && !a.c);
+        const pe = pa.filter(a => !a.pa).length;
+        const c = document.createElement('div');
+        c.className = 'card';
+        let h = '<h3>' + p.n + '</h3><p>📱 ' + p.ph + '</p>';
+        if (pe) h += '<p style="color:#e76f51">⚠️ ' + pe + ' pendente(s)</p>';
+        c.innerHTML = h;
+        c.onclick = () => openPatientModal(p.i);
+        pl.appendChild(c);
+    });
+}
+
+function searchPatients(t) {
+    document.querySelectorAll('#patientsList .card').forEach(c => {
+        c.style.display = c.querySelector('h3').textContent.toLowerCase().includes(t.toLowerCase()) ? 'block' : 'none';
+    });
+}
+
+function openPatientModal(id) {
+    curP = id;
+    document.getElementById('patId').value = '';
+    document.getElementById('patName').value = '';
+    document.getElementById('patPhone').value = '';
+    document.getElementById('patVal').value = '';
+    if (id) {
+        const p = CD.p.find(x => x.i === id);
+        document.getElementById('patTitle').textContent = 'Editar';
+        document.getElementById('patId').value = p.i;
+        document.getElementById('patName').value = p.n;
+        document.getElementById('patPhone').value = p.ph;
+        document.getElementById('patVal').value = p.v || '';
+    } else {
+        document.getElementById('patTitle').textContent = 'Novo Paciente';
+    }
+    document.getElementById('patientModal').classList.add('active');
+}
+
+function savePatient() {
+    const id = document.getElementById('patId').value;
+    const d = {
+        i: id || Date.now().toString(),
+        n: document.getElementById('patName').value,
+        ph: document.getElementById('patPhone').value,
+        v: document.getElementById('patVal').value
+    };
+    if (!d.n || !d.ph) {
+        alert('Preencha nome e telefone!');
+        return;
+    }
+    if (id) {
+        const ix = CD.p.findIndex(p => p.i === id);
+        CD.p[ix] = d;
+    } else {
+        CD.p.push(d);
+    }
+    closeModal('patientModal');
+    renderPts();
+    loadPatSel();
+}
+
+function delPatient() {
+    if (!confirm('Excluir paciente?')) return;
+    CD.p = CD.p.filter(p => p.i !== curP);
+    CD.a = CD.a.filter(a => a.p !== curP);
+    CD.e = CD.e.filter(e => e.p !== curP);
+    closeModal('patientModal');
+    renderPts();
+    renderCal();
+    updFin();
+}
+
+function openApptModal(y, m, d) {
+    document.getElementById('apptPat').value = '';
+    document.getElementById('apptTime').value = '';
+    document.getElementById('apptVal').value = '';
+    if (y !== undefined) {
+        document.getElementById('apptDate').value = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    } else {
+        document.getElementById('apptDate').value = new Date().toISOString().split('T')[0];
+    }
+    document.getElementById('apptModal').classList.add('active');
+}
+
+function saveAppt() {
+    const pid = document.getElementById('apptPat').value;
+    if (!pid) {
+        alert('Selecione paciente!');
+        return;
+    }
+    const pt = CD.p.find(p => p.i === pid);
+    const d = {
+        i: Date.now().toString(),
+        p: pid,
+        d: document.getElementById('apptDate').value,
+        t: document.getElementById('apptTime').value,
+        v: document.getElementById('apptVal').value || pt.v || 0,
+        pa: false,
+        c: false
+    };
+    CD.a.push(d);
+    closeModal('apptModal');
+    renderCal();
+    updFin();
+}
+
+function renderFin() {
+    const tb = document.getElementById('finTable');
+    tb.innerHTML = '';
+    const so = CD.a.filter(a => !a.c).sort((a, b) => new Date(b.d) - new Date(a.d));
+    so.forEach(ap => {
+        const pt = CD.p.find(p => p.i === ap.p);
+        const r = document.createElement('tr');
+        r.innerHTML = '<td>' + (pt ? pt.n : '-') + '</td><td>' + fmtDate(ap.d) + '</td><td>R$ ' + parseFloat(ap.v || 0).toFixed(2) + '</td><td>' + (ap.pa ? '✅' : '⏳') + '</td><td><button class="btn btn-primary" onclick="togglePay(\\'' + ap.i + '\\')">' + (ap.pa ? 'Desm.' : 'Pagar') + '</button></td>';
+        tb.appendChild(r);
+    });
+}
+
+function updFin() {
+    const ac = CD.a.filter(a => !a.c);
+    const rec = ac.filter(a => a.pa).reduce((s, a) => s + parseFloat(a.v || 0), 0);
+    const pen = ac.filter(a => !a.pa).reduce((s, a) => s + parseFloat(a.v || 0), 0);
+    document.getElementById('totalRec').textContent = 'R$ ' + rec.toFixed(2);
+    document.getElementById('totalPen').textContent = 'R$ ' + pen.toFixed(2);
+    document.getElementById('totalSess').textContent = ac.length;
+}
+
+function togglePay(id) {
+    const ap = CD.a.find(a => a.i === id);
+    ap.pa = !ap.pa;
+    renderFin();
+    updFin();
+    renderCal();
+}
+
+function openExpenseModal() {
+    document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('expenseModal').classList.add('active');
+}
+
+function saveExpense() {
+    const d = {
+        i: Date.now().toString(),
+        dt: document.getElementById('expDate').value,
+        ds: document.getElementById('expDesc').value,
+        v: parseFloat(document.getElementById('expVal').value)
+    };
+    if (!d.dt || !d.ds || !d.v) {
+        alert('Preencha todos os campos!');
+        return;
+    }
+    CD.ex.push(d);
+    closeModal('expenseModal');
+    document.getElementById('expDesc').value = '';
+    document.getElementById('expVal').value = '';
+    renderCF();
+}
+
+function renderCF() {
+    const m = document.getElementById('cfMonth').value;
+    if (!m) return;
+    const p = m.split('-'), y = parseInt(p[0]), mo = parseInt(p[1]);
+    const en = CD.a.filter(a => a.pa && !a.c).filter(a => {
+        const ap = a.d.split('-');
+        return parseInt(ap[0]) === y && parseInt(ap[1]) === mo;
+    });
+    const sa = CD.ex.filter(e => {
+        const ep = e.dt.split('-');
+        return parseInt(ep[0]) === y && parseInt(ep[1]) === mo;
+    });
+    const te = en.reduce((s, a) => s + parseFloat(a.v || 0), 0);
+    const ts = sa.reduce((s, e) => s + parseFloat(e.v || 0), 0);
+    document.getElementById('cfEnt').textContent = 'R$ ' + te.toFixed(2);
+    document.getElementById('cfSai').textContent = 'R$ ' + ts.toFixed(2);
+    document.getElementById('cfBal').textContent = 'R$ ' + (te - ts).toFixed(2);
+    const t = document.getElementById('cfTable');
+    t.innerHTML = '<thead><tr><th>Data</th><th>Descrição</th><th>Valor</th></tr></thead><tbody>' + sa.map(e => '<tr><td>' + fmtDate(e.dt) + '</td><td>' + e.ds + '</td><td>R$ ' + e.v.toFixed(2) + '</td></tr>').join('') + '</tbody>';
+}
+
+function loadPatSel() {
+    const s = document.getElementById('apptPat');
+    s.innerHTML = '<option value="">Selecione...</option>';
+    CD.p.forEach(p => {
+        const o = document.createElement('option');
+        o.value = p.i;
+        o.textContent = p.n;
+        s.appendChild(o);
+    });
+}
+
+function fmtDate(d) {
+    if (!d) return '';
+    const p = d.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+document.querySelectorAll('.modal').forEach(m => {
+    m.onclick = function(e) {
+        if (e.target === this) this.classList.remove('active');
+    }
+});
+</script>
+</body>
+</html>`;
+            
+            // Download do arquivo
+            const blob = new Blob([systemCode], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'index.html';
+            link.click();
+            
+            alert('✅ Arquivo SISTEMA_ASM.html gerado!\n\nAgora:\n1. Crie um repositório no GitHub\n2. Faça upload deste arquivo\n3. Ative o GitHub Pages\n4. Envie o link + login + senha para os profissionais');
+        }
+    </script>
+</body>
+</html>
 
